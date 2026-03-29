@@ -1,18 +1,14 @@
 import type { CalculationResult, AmbientLight } from '@/types';
 import { AMBIENT_MULTIPLIERS } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Sun, 
-  Monitor, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle,
-  Info,
+  Trophy,
   TrendingUp,
-  Minus
+  Sparkles,
+  Info,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
-import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface ResultsPanelProps {
   resultA: CalculationResult;
@@ -31,232 +27,98 @@ export function ResultsPanel({
   ambientLight,
   screenSize,
 }: ResultsPanelProps) {
-  const ambientInfo = AMBIENT_MULTIPLIERS[ambientLight];
-  
-  // Calculate comparison
-  const brightnessDiff = resultB.footLamberts - resultA.footLamberts;
-  const brightnessDiffPercent = resultA.footLamberts > 0 
-    ? ((brightnessDiff / resultA.footLamberts) * 100) 
-    : 0;
-  
-  const winner = brightnessDiff > 0 ? 'B' : brightnessDiff < 0 ? 'A' : 'tie';
+  const winner = resultA.footLamberts > resultB.footLamberts ? 'A' : 'B';
+  const winnerName = winner === 'A' ? projectorNameA : projectorNameB;
+  const diff = Math.abs(resultA.footLamberts - resultB.footLamberts);
+  const diffPercent = Math.round((diff / Math.min(resultA.footLamberts, resultB.footLamberts)) * 100);
 
-  const ratingColors = {
-    'Excellent': 'bg-green-100 text-green-800 border-green-200',
-    'Good': 'bg-blue-100 text-blue-800 border-blue-200',
-    'Fair': 'bg-amber-100 text-amber-800 border-amber-200',
-    'Poor': 'bg-red-100 text-red-800 border-red-200',
-  };
-
-  const ratingIcons = {
-    'Excellent': <CheckCircle2 className="w-4 h-4 text-green-600" />,
-    'Good': <CheckCircle2 className="w-4 h-4 text-blue-600" />,
-    'Fair': <AlertTriangle className="w-4 h-4 text-amber-600" />,
-    'Poor': <XCircle className="w-4 h-4 text-red-600" />,
-  };
+  const ambientLabel = AMBIENT_MULTIPLIERS[ambientLight].label;
 
   return (
-    <TooltipProvider>
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">Results</h2>
-
-        {/* Comparison Summary */}
-        <Card className="border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Brightness Comparison
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-center py-2">
-              {winner === 'tie' ? (
-                <div className="flex items-center justify-center gap-2 text-slate-600">
-                  <Minus className="w-5 h-5" />
-                  <span className="text-lg font-medium">Equal Brightness</span>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-center gap-2">
-                    {winner === 'B' ? (
-                      <TrendingUp className="w-5 h-5 text-emerald-600" />
-                    ) : (
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
-                    )}
-                    <span className={`text-lg font-semibold ${winner === 'B' ? 'text-emerald-700' : 'text-blue-700'}`}>
-                      {winner === 'B' ? projectorNameB : projectorNameA} is brighter
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-500">
-                    {Math.abs(brightnessDiff).toFixed(1)} fL ({Math.abs(brightnessDiffPercent).toFixed(0)}% difference)
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Projector A Results */}
-        <ProjectorResultCard
-          name={projectorNameA}
-          result={resultA}
-          color="blue"
-          ratingColors={ratingColors}
-          ratingIcons={ratingIcons}
-        />
-
-        {/* Projector B Results */}
-        <ProjectorResultCard
-          name={projectorNameB}
-          result={resultB}
-          color="emerald"
-          ratingColors={ratingColors}
-          ratingIcons={ratingIcons}
-        />
-
-        {/* Setup Info */}
-        <Card className="border-slate-200 bg-slate-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-              <Monitor className="w-4 h-4" />
-              Current Setup
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Screen Size</span>
-                <span className="font-medium text-slate-700">{screenSize}"</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Ambient Light</span>
-                <div className="flex items-center gap-1.5">
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-white ${
-                    ambientLight === 'low' ? 'bg-slate-700' : ambientLight === 'medium' ? 'bg-amber-500' : 'bg-orange-500'
-                  }`}>
-                    <Sun className="w-2.5 h-2.5" />
-                  </div>
-                  <span className="font-medium text-slate-700">{ambientInfo.label}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Ambient Multiplier</span>
-                <span className="font-medium text-slate-700">×{ambientInfo.multiplier}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Reference Guide */}
-        <Card className="border-slate-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-              <Info className="w-4 h-4" />
-              Brightness Guide
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-slate-600"><strong>16+ fL</strong> - Excellent (dark room)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-slate-600"><strong>12-16 fL</strong> - Good (dark room)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-500" />
-                <span className="text-slate-600"><strong>8-12 fL</strong> - Fair (may need adjustment)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-slate-600"><strong>&lt;8 fL</strong> - Poor (too dim)</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-400 mt-3">
-              Thresholds vary by ambient light. Bright rooms need higher fL values.
-            </p>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Trophy className="w-5 h-5 text-amber-500" />
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight uppercase tracking-tighter">Recommendation</h2>
       </div>
-    </TooltipProvider>
+
+      {/* Winner Spotlight */}
+      <div className="bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-3">
+           <Sparkles className="w-4 h-4 text-blue-500/20" />
+        </div>
+        <div className="relative z-10">
+          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Top Pick</p>
+          <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight truncate mb-2">{winnerName}</h3>
+
+          <div className="flex items-center gap-2 mb-4">
+            <Badge variant="secondary" className="bg-blue-600 text-white border-none text-[10px] font-bold uppercase tracking-widest px-2 py-0.5">
+              Winner
+            </Badge>
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              +{diffPercent}% Brighter
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+            {winner === 'A' ? resultA.recommendation : resultB.recommendation}
+          </p>
+        </div>
+      </div>
+
+      {/* Detailed comparison */}
+      <div className="space-y-4 pt-4 border-t dark:border-slate-800">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Key Comparison</h4>
+        
+        <div className="space-y-3">
+           <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Difference</span>
+              <p className="text-lg font-black text-slate-900 dark:text-white leading-none">
+                {diff.toFixed(1)} <span className="text-[10px] text-slate-400">fL</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Ratio</span>
+              <p className="text-lg font-black text-slate-900 dark:text-white leading-none">
+                {(Math.max(resultA.footLamberts, resultB.footLamberts) / Math.min(resultA.footLamberts, resultB.footLamberts)).toFixed(2)}x
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-3">
+            <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+            <p className="text-[10px] text-blue-800 dark:text-blue-300 leading-normal font-medium">
+              On a <strong>{screenSize}" screen</strong> in a <strong>{ambientLabel}</strong>, the difference between these units is <strong>highly visible</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <div className="space-y-3 pt-4 border-t dark:border-slate-800">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Checklist</h4>
+        <div className="space-y-2">
+          <CheckItem label="Brightness Goal" status={Math.max(resultA.footLamberts, resultB.footLamberts) >= 16 ? 'pass' : 'warn'} />
+          <CheckItem label="Ambient Contrast" status={ambientLight === 'low' ? 'pass' : 'warn'} />
+          <CheckItem label="Visual Comfort" status="pass" />
+        </div>
+      </div>
+    </div>
   );
 }
 
-interface ProjectorResultCardProps {
-  name: string;
-  result: CalculationResult;
-  color: 'blue' | 'emerald';
-  ratingColors: Record<string, string>;
-  ratingIcons: Record<string, React.ReactNode>;
-}
-
-function ProjectorResultCard({
-  name,
-  result,
-  color,
-  ratingColors,
-  ratingIcons,
-}: ProjectorResultCardProps) {
-  const borderColor = color === 'blue' ? 'border-l-blue-500' : 'border-l-emerald-500';
-  const bgColor = color === 'blue' ? 'bg-blue-50/50' : 'bg-emerald-50/50';
-
+function CheckItem({ label, status }: { label: string; status: 'pass' | 'warn' | 'fail' }) {
   return (
-    <Card className={`border-slate-200 border-l-4 ${borderColor} ${bgColor}`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-slate-700 truncate">{name}</CardTitle>
-          <Badge variant="outline" className={ratingColors[result.rating]}>
-            <span className="flex items-center gap-1">
-              {ratingIcons[result.rating]}
-              {result.rating}
-            </span>
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className="text-center p-2 bg-white rounded-lg border border-slate-200">
-            <div className="text-xs text-slate-500 mb-1">Foot-Lamberts</div>
-            <div className="text-xl font-bold text-slate-800">{result.footLamberts.toFixed(1)}</div>
-            <div className="text-[10px] text-slate-400">fL</div>
-          </div>
-          <div className="text-center p-2 bg-white rounded-lg border border-slate-200">
-            <div className="text-xs text-slate-500 mb-1">Nits</div>
-            <div className="text-xl font-bold text-slate-800">{result.nits.toFixed(1)}</div>
-            <div className="text-[10px] text-slate-400">cd/m²</div>
-          </div>
-        </div>
-        
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500">Visual Brightness</span>
-            <span className="font-medium text-slate-700">{Math.round(result.visualBrightness)}%</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div 
-              className={`h-1.5 rounded-full ${color === 'blue' ? 'bg-blue-500' : 'bg-emerald-500'}`}
-              style={{ width: `${Math.min(100, result.visualBrightness)}%` }}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between text-xs mt-2">
-            <span className="text-slate-500">Contrast Reduction</span>
-            <span className="font-medium text-slate-700">{result.contrastReduction}%</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div 
-              className="h-1.5 rounded-full bg-slate-400"
-              style={{ width: `${result.contrastReduction}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3 p-2 bg-white rounded-lg border border-slate-200">
-          <p className="text-xs text-slate-600 leading-relaxed">{result.recommendation}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center justify-between">
+      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">{label}</span>
+      {status === 'pass' ? (
+        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+      ) : status === 'warn' ? (
+        <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+      ) : (
+        <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+      )}
+    </div>
   );
 }
