@@ -23,6 +23,11 @@ import {
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
+/**
+ * Root application component that renders the projector comparison UI, synchronizes select URL query parameters on mount, and manages global UI state (help dialog and mobile controls).
+ *
+ * @returns The root React element for the ProjSim application.
+ */
 function App() {
   const {
     sharedParams,

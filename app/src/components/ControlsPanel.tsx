@@ -32,6 +32,20 @@ interface ControlsPanelProps {
   resetToDefaults: () => void;
 }
 
+/**
+ * Render the configuration UI for shared parameters and two projector-specific control panels.
+ *
+ * @param sharedParams - Current shared configuration (screen size, ambient light, distances, etc.)
+ * @param projectorA - Projector A state (name, lumens, etc.)
+ * @param projectorB - Projector B state (name, lumens, etc.)
+ * @param isLocked - Whether controls are locked from editing
+ * @param updateSharedParam - Callback to update a shared parameter: (key, value) => void
+ * @param updateProjectorA - Callback to update a Projector A field: (key, value) => void
+ * @param updateProjectorB - Callback to update a Projector B field: (key, value) => void
+ * @param setIsLocked - Callback to set the locked state: (isLocked) => void
+ * @param resetToDefaults - Callback to reset all parameters to their default values
+ * @returns The rendered controls panel element containing Setup, Proj A, and Proj B tabs
+ */
 export function ControlsPanel({
   sharedParams,
   projectorA,
@@ -208,6 +222,18 @@ interface ProjectorControlsProps {
   color: 'blue' | 'emerald';
 }
 
+/**
+ * Render controls for a single projector's name and brightness, including quick lumens presets.
+ *
+ * The component displays an editable name input, a numeric brightness input with a mirrored slider,
+ * and preset buttons for common lumen values. Brightness values are constrained to the range 500–10000.
+ *
+ * @param projector - The projector data object whose `name` and `lumens` are shown and edited.
+ * @param updateProjector - Callback invoked to update a single projector field; called as `(key, value)` with `key` typically `'name'` or `'lumens'`.
+ * @param label - Short label used for placeholders/identification (e.g., "A" or "B").
+ * @param color - Accent color choice (`'blue'` or `'emerald'`) that determines styling.
+ * @returns The rendered React element for the projector controls.
+ */
 function ProjectorControls({ projector, updateProjector, label, color }: ProjectorControlsProps) {
   const accentColor = color === 'blue' ? 'text-blue-600' : 'text-emerald-600';
   const inputBg = 'dark:bg-slate-800 dark:border-slate-700';

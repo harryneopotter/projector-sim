@@ -19,6 +19,19 @@ interface ResultsPanelProps {
   screenSize: number;
 }
 
+/**
+ * Render a recommendation panel comparing two projector measurement results and highlighting a top pick.
+ *
+ * Renders a "Recommendation" section that identifies the brighter projector, shows the brightness difference and ratio, displays the selected recommendation text for the winner, and provides a checklist of pass/warn indicators.
+ *
+ * @param resultA - Measurement and recommendation data for projector A
+ * @param resultB - Measurement and recommendation data for projector B
+ * @param projectorNameA - Display name for projector A
+ * @param projectorNameB - Display name for projector B
+ * @param ambientLight - Ambient light level key used to look up labels (e.g., 'low', 'medium', 'high')
+ * @param screenSize - Screen diagonal size in inches
+ * @returns The rendered React element containing the recommendation, key comparison, and checklist UI
+ */
 export function ResultsPanel({
   resultA,
   resultB,
@@ -108,6 +121,18 @@ export function ResultsPanel({
   );
 }
 
+/**
+ * Renders a single checklist row with a label and a status icon.
+ *
+ * Displays `label` on the left and an icon on the right indicating `status`:
+ * - `pass`: green check circle
+ * - `warn`: amber warning triangle
+ * - `fail`: red warning triangle
+ *
+ * @param label - Text shown for the checklist item
+ * @param status - One of `'pass' | 'warn' | 'fail'` that selects icon and color
+ * @returns A JSX element containing the labeled status row
+ */
 function CheckItem({ label, status }: { label: string; status: 'pass' | 'warn' | 'fail' }) {
   return (
     <div className="flex items-center justify-between">

@@ -27,6 +27,18 @@ const SCENES: { id: SampleImage; label: string; url: string }[] = [
   },
 ];
 
+/**
+ * Renders an interactive side-by-side projector comparison view with a draggable vertical split, scene selector, ambient-light context, and per-projector stats.
+ *
+ * Displays projector B as the background and projector A clipped to the left by the slider. Shows ambient lighting label/description, clickable scene thumbnails to change the background, persistent corner badges for projector names, and a two-panel stats summary. The split position is driven by pointer/touch movement and the component tracks its container width to align the clipped left layer.
+ *
+ * @param resultA - Measurement and rating data for projector A
+ * @param resultB - Measurement and rating data for projector B
+ * @param ambientLight - Ambient lighting preset key used to adjust displayed brightness and label/description
+ * @param projectorNameA - Display name for projector A (left)
+ * @param projectorNameB - Display name for projector B (right)
+ * @returns The rendered projector comparison visualization element
+ */
 export function Visualization({
   resultA,
   resultB,
@@ -176,6 +188,15 @@ export function Visualization({
   );
 }
 
+/**
+ * Renders a projector visual layer showing the scene background, adjusted image filters, and a HUD with rating and luminance.
+ *
+ * @param result - Calculation result containing display metrics; expects `footLamberts`, `contrastReduction`, and `rating`
+ * @param normBrightness - Normalized brightness (0–100) used to compute the layer's CSS brightness
+ * @param sceneUrl - URL of the background scene image for this layer
+ * @param side - Side for HUD and bezel placement; either `'left'` or `'right'`
+ * @returns The rendered projector visual layer element
+ */
 function ProjectorLayer({
   result,
   normBrightness,
@@ -229,6 +250,17 @@ function ProjectorLayer({
   );
 }
 
+/**
+ * Renders a compact stats panel showing a projector label, its measured foot-lamberts, and nits.
+ *
+ * The panel's accent colors are selected by `color` and the layout adapts for small screens
+ * (hiding the nits value on narrow viewports).
+ *
+ * @param projectorName - Display name shown in the panel header (uppercase).
+ * @param result - Measurement results used to display `footLamberts` and `nits`.
+ * @param color - Accent color theme for the panel; controls background, text, and dot colors.
+ * @returns A JSX element containing the styled stats summary for the specified projector.
+ */
 function StatsSummary({ projectorName, result, color }: { projectorName: string; result: CalculationResult; color: 'blue' | 'emerald' }) {
   const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-emerald-50 dark:bg-emerald-900/10';
   const textColor = color === 'blue' ? 'text-blue-700 dark:text-blue-300' : 'text-emerald-700 dark:text-emerald-300';
