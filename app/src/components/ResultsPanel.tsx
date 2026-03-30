@@ -94,7 +94,9 @@ export function ResultsPanel({
             <div className="text-right">
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Ratio</span>
               <p className="text-lg font-black text-slate-900 dark:text-white leading-none">
-                {(Math.max(resultA.footLamberts, resultB.footLamberts) / Math.min(resultA.footLamberts, resultB.footLamberts)).toFixed(2)}x
+                {(Math.min(resultA.footLamberts, resultB.footLamberts) > 0
+                  ? (Math.max(resultA.footLamberts, resultB.footLamberts) / Math.min(resultA.footLamberts, resultB.footLamberts)).toFixed(2)
+                  : '∞')}x
               </p>
             </div>
           </div>
