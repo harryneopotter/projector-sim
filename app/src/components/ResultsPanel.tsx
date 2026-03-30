@@ -40,10 +40,11 @@ export function ResultsPanel({
   ambientLight,
   screenSize,
 }: ResultsPanelProps) {
-  const winner = resultA.footLamberts > resultB.footLamberts ? 'A' : 'B';
+  const winner = resultA.footLamberts >= resultB.footLamberts ? 'A' : 'B';
   const winnerName = winner === 'A' ? projectorNameA : projectorNameB;
+  const minFL = Math.min(resultA.footLamberts, resultB.footLamberts);
   const diff = Math.abs(resultA.footLamberts - resultB.footLamberts);
-  const diffPercent = Math.round((diff / Math.min(resultA.footLamberts, resultB.footLamberts)) * 100);
+  const diffPercent = minFL > 0 ? Math.round((diff / minFL) * 100) : null;
 
   const ambientLabel = AMBIENT_MULTIPLIERS[ambientLight].label;
 
@@ -69,7 +70,7 @@ export function ResultsPanel({
             </Badge>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
-              +{diffPercent}% Brighter
+              {diffPercent !== null ? `+${diffPercent}% Brighter` : 'Equal brightness'}
             </span>
           </div>
 

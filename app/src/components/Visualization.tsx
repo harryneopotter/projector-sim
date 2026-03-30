@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type MouseEvent, type TouchEvent } from 'react';
 import type { CalculationResult, AmbientLight } from '@/types';
 import { AMBIENT_MULTIPLIERS } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -70,10 +70,10 @@ export function Visualization({
   const normBrightnessA = maxAdj > 0 ? Math.max(10, Math.pow(adjA / maxAdj, 0.45) * 100) : 10;
   const normBrightnessB = maxAdj > 0 ? Math.max(10, Math.pow(adjB / maxAdj, 0.45) * 100) : 10;
 
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMove = (e: MouseEvent | TouchEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const x = 'touches' in e ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
+    const x = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
     const pos = ((x - rect.left) / rect.width) * 100;
     setSliderPos(Math.max(0, Math.min(100, pos)));
   };
@@ -127,7 +127,6 @@ export function Visualization({
         {/* Projector B (Right Side / Background) */}
         <div className="absolute inset-0">
           <ProjectorLayer
-            name={projectorNameB}
             result={resultB}
             normBrightness={normBrightnessB}
             sceneUrl={scene.url}
@@ -145,7 +144,6 @@ export function Visualization({
             style={{ width: containerWidth }}
           >
              <ProjectorLayer
-              name={projectorNameA}
               result={resultA}
               normBrightness={normBrightnessA}
               sceneUrl={scene.url}
@@ -203,7 +201,6 @@ function ProjectorLayer({
   sceneUrl,
   side
 }: {
-  name: string;
   result: CalculationResult;
   normBrightness: number;
   sceneUrl: string;

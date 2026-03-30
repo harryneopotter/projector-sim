@@ -25,9 +25,9 @@ interface ControlsPanelProps {
   projectorA: Projector;
   projectorB: Projector;
   isLocked: boolean;
-  updateSharedParam: (key: keyof SharedParams, value: any) => void;
-  updateProjectorA: (key: keyof Projector, value: any) => void;
-  updateProjectorB: (key: keyof Projector, value: any) => void;
+  updateSharedParam: <K extends keyof SharedParams>(key: K, value: SharedParams[K]) => void;
+  updateProjectorA: <K extends keyof Projector>(key: K, value: Projector[K]) => void;
+  updateProjectorB: <K extends keyof Projector>(key: K, value: Projector[K]) => void;
   setIsLocked: (isLocked: boolean) => void;
   resetToDefaults: () => void;
 }
