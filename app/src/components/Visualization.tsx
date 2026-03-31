@@ -28,7 +28,7 @@ const SCENES: { id: SampleImage; label: string; url: string }[] = [
 ];
 
 /**
- * Render an interactive projector comparison with a draggable vertical split, scene selector, ambient-light context, and per-projector stats.
+ * Renders an interactive projector comparison with a draggable vertical split, scene selector, ambient-light context, and per-projector stats.
  *
  * @param resultA - Measurement and rating data for the left projector
  * @param resultB - Measurement and rating data for the right projector
