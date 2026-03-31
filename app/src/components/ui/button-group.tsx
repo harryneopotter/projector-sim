@@ -79,5 +79,6 @@ export {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-  buttonGroupVariants,
 }
+// eslint-disable-next-line react-refresh/only-export-components
+export { buttonGroupVariants }
