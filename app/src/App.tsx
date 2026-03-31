@@ -58,12 +58,14 @@ function App() {
     const lumensB = params.get('lumensB');
 
     if (size) updateSharedParam('screenSize', Number(size));
-    if (ambient) updateSharedParam('ambientLight', ambient as any);
+    if (ambient === 'low' || ambient === 'medium' || ambient === 'high') {
+      updateSharedParam('ambientLight', ambient);
+    }
     if (nameA) updateProjectorA('name', nameA);
     if (lumensA) updateProjectorA('lumens', Number(lumensA));
     if (nameB) updateProjectorB('name', nameB);
     if (lumensB) updateProjectorB('lumens', Number(lumensB));
-  }, []);
+  }, [updateProjectorA, updateProjectorB, updateSharedParam]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
