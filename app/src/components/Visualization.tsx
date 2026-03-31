@@ -28,16 +28,14 @@ const SCENES: { id: SampleImage; label: string; url: string }[] = [
 ];
 
 /**
- * Renders an interactive side-by-side projector comparison view with a draggable vertical split, scene selector, ambient-light context, and per-projector stats.
+ * Render an interactive projector comparison with a draggable vertical split, scene selector, ambient-light context, and per-projector stats.
  *
- * Displays projector B as the background and projector A clipped to the left by the slider. Shows ambient lighting label/description, clickable scene thumbnails to change the background, persistent corner badges for projector names, and a two-panel stats summary. The split position is driven by pointer/touch movement and the component tracks its container width to align the clipped left layer.
- *
- * @param resultA - Measurement and rating data for projector A
- * @param resultB - Measurement and rating data for projector B
+ * @param resultA - Measurement and rating data for the left projector
+ * @param resultB - Measurement and rating data for the right projector
  * @param ambientLight - Ambient lighting preset key used to adjust displayed brightness and label/description
- * @param projectorNameA - Display name for projector A (left)
- * @param projectorNameB - Display name for projector B (right)
- * @returns The rendered projector comparison visualization element
+ * @param projectorNameA - Display name for the left projector
+ * @param projectorNameB - Display name for the right projector
+ * @returns The rendered comparison visualization element
  */
 export function Visualization({
   resultA,
