@@ -1,5 +1,46 @@
-import type { SharedParams, Projector, CalculationResult, AmbientLight } from '@/types';
+import type { SharedParams, Projector, CalculationResult, AmbientLight, BrightnessRating } from '@/types';
 import { AMBIENT_MULTIPLIERS } from '@/types';
+
+type BrightnessStatus = 'too-dim' | 'dim' | 'ideal' | 'bright' | 'too-bright';
+
+interface BrightnessProfile {
+  minimum: number;
+  acceptableMin: number;
+  idealMin: number;
+  idealMax: number;
+  acceptableMax: number;
+}
+
+interface BrightnessAssessment {
+  adjustedFL: number;
+  status: BrightnessStatus;
+  rating: BrightnessRating;
+  profile: BrightnessProfile;
+}
+
+const BRIGHTNESS_PROFILES: Record<AmbientLight, BrightnessProfile> = {
+  low: {
+    minimum: 8,
+    acceptableMin: 12,
+    idealMin: 16,
+    idealMax: 22,
+    acceptableMax: 30,
+  },
+  medium: {
+    minimum: 14,
+    acceptableMin: 22,
+    idealMin: 30,
+    idealMax: 50,
+    acceptableMax: 65,
+  },
+  high: {
+    minimum: 20,
+    acceptableMin: 30,
+    idealMin: 45,
+    idealMax: 75,
+    acceptableMax: 100,
+  },
+};
 
 /**
  * Calculate screen dimensions from diagonal (16:9 aspect ratio)
@@ -55,50 +96,87 @@ export function calculateVisualBrightness(
   return Math.max(20, visualBrightness);
 }
 
+export function getBrightnessProfile(ambientLight: AmbientLight): BrightnessProfile {
+  return BRIGHTNESS_PROFILES[ambientLight];
+}
+
+export function assessBrightness(footLamberts: number, ambientLight: AmbientLight): BrightnessAssessment {
+  const { multiplier } = AMBIENT_MULTIPLIERS[ambientLight];
+  const adjustedFL = footLamberts * multiplier;
+  const profile = getBrightnessProfile(ambientLight);
+
+  if (adjustedFL < profile.minimum) {
+    return { adjustedFL, status: 'too-dim', rating: 'Poor', profile };
+  }
+
+  if (adjustedFL < profile.acceptableMin) {
+    return { adjustedFL, status: 'dim', rating: 'Fair', profile };
+  }
+
+  if (adjustedFL < profile.idealMin) {
+    return { adjustedFL, status: 'dim', rating: 'Good', profile };
+  }
+
+  if (adjustedFL <= profile.idealMax) {
+    return { adjustedFL, status: 'ideal', rating: 'Excellent', profile };
+  }
+
+  if (adjustedFL <= profile.acceptableMax) {
+    return { adjustedFL, status: 'bright', rating: 'Good', profile };
+  }
+
+  return { adjustedFL, status: 'too-bright', rating: 'Fair', profile };
+}
+
 /**
  * Get brightness rating based on foot-lamberts and ambient light
  */
 export function getBrightnessRating(
   footLamberts: number, 
   ambientLight: AmbientLight
-): 'Excellent' | 'Good' | 'Fair' | 'Poor' {
-  const { multiplier } = AMBIENT_MULTIPLIERS[ambientLight];
-  const adjustedFL = footLamberts * multiplier;
-  
-  // Thresholds for adjusted fL (raw fL × ambient multiplier).
-  // Medium/high values calibrated so that industry-standard lumen
-  // recommendations earn the expected rating on a 100" screen:
-  //   medium (living room): ~2500 lm → Excellent, ~1200 lm → Good
-  //   high (bright room):   ~5000 lm → Excellent, ~3000 lm → Good
-  const thresholds = {
-    low:    { excellent: 16, good: 12, fair:  8 },
-    medium: { excellent: 55, good: 38, fair: 22 },
-    high:   { excellent: 100, good: 60, fair: 30 },
+): BrightnessRating {
+  return assessBrightness(footLamberts, ambientLight).rating;
+}
+
+export function getBrightnessFitScore(footLamberts: number, ambientLight: AmbientLight): number {
+  const assessment = assessBrightness(footLamberts, ambientLight);
+  const midpoint = (assessment.profile.idealMin + assessment.profile.idealMax) / 2;
+  const distanceToIdeal =
+    assessment.adjustedFL < assessment.profile.idealMin
+      ? assessment.profile.idealMin - assessment.adjustedFL
+      : assessment.adjustedFL > assessment.profile.idealMax
+        ? assessment.adjustedFL - assessment.profile.idealMax
+        : Math.abs(assessment.adjustedFL - midpoint) * 0.25;
+
+  const baseScore: Record<BrightnessStatus, number> = {
+    ideal: 400,
+    bright: 300,
+    dim: 250,
+    'too-bright': 180,
+    'too-dim': 100,
   };
-  
-  const t = thresholds[ambientLight];
-  
-  if (adjustedFL >= t.excellent) return 'Excellent';
-  if (adjustedFL >= t.good) return 'Good';
-  if (adjustedFL >= t.fair) return 'Fair';
-  return 'Poor';
+
+  return baseScore[assessment.status] - distanceToIdeal;
 }
 
 /**
  * Get recommendation text based on rating
  */
-export function getRecommendation(rating: string, ambientLight: AmbientLight): string {
+export function getRecommendation(footLamberts: number, ambientLight: AmbientLight): string {
   const ambientLabel = AMBIENT_MULTIPLIERS[ambientLight].label.toLowerCase();
-  
-  switch (rating) {
-    case 'Excellent':
-      return `Perfect for ${ambientLabel} viewing. Vibrant colors and excellent contrast.`;
-    case 'Good':
-      return `Great for ${ambientLabel} viewing. Good image quality with solid contrast.`;
-    case 'Fair':
-      return `Acceptable for ${ambientLabel} viewing. Consider a brighter projector or smaller screen.`;
-    case 'Poor':
-      return `Too dim for ${ambientLabel} viewing. Recommend brighter projector or smaller screen.`;
+  const { adjustedFL, status, profile } = assessBrightness(footLamberts, ambientLight);
+
+  switch (status) {
+    case 'ideal':
+      return `Hits the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing.`;
+    case 'bright':
+      return `Brighter than the usual ${ambientLabel} target, but still usable if you prefer a punchier image.`;
+    case 'too-bright':
+      return `Well above the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing and may feel harsh in darker scenes.`;
+    case 'dim':
+      return `A bit under the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing.`;
+    case 'too-dim':
+      return `Too dim for ${ambientLabel} viewing at roughly ${adjustedFL.toFixed(1)} effective fL.`;
     default:
       return '';
   }
@@ -116,7 +194,7 @@ export function calculateProjector(
   const visualBrightness = calculateVisualBrightness(footLamberts, sharedParams.ambientLight);
   const { contrastReduction } = AMBIENT_MULTIPLIERS[sharedParams.ambientLight];
   const rating = getBrightnessRating(footLamberts, sharedParams.ambientLight);
-  const recommendation = getRecommendation(rating, sharedParams.ambientLight);
+  const recommendation = getRecommendation(footLamberts, sharedParams.ambientLight);
   
   return {
     footLamberts: Math.round(footLamberts * 10) / 10,

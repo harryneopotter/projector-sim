@@ -1,6 +1,7 @@
 import type { CalculationResult, AmbientLight } from '@/types';
 import { AMBIENT_MULTIPLIERS } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { assessBrightness, getBrightnessFitScore, getBrightnessProfile } from '@/lib/calculations';
 import { 
   Trophy,
   TrendingUp,
@@ -40,13 +41,27 @@ export function ResultsPanel({
   ambientLight,
   screenSize,
 }: ResultsPanelProps) {
-  const winner = resultA.footLamberts >= resultB.footLamberts ? 'A' : 'B';
+  const fitScoreA = getBrightnessFitScore(resultA.footLamberts, ambientLight);
+  const fitScoreB = getBrightnessFitScore(resultB.footLamberts, ambientLight);
+  const winner = fitScoreA >= fitScoreB ? 'A' : 'B';
   const winnerName = winner === 'A' ? projectorNameA : projectorNameB;
-  const minFL = Math.min(resultA.footLamberts, resultB.footLamberts);
+  const winnerResult = winner === 'A' ? resultA : resultB;
   const diff = Math.abs(resultA.footLamberts - resultB.footLamberts);
-  const diffPercent = minFL > 0 ? Math.round((diff / minFL) * 100) : null;
 
   const ambientLabel = AMBIENT_MULTIPLIERS[ambientLight].label;
+  const brightnessProfile = getBrightnessProfile(ambientLight);
+  const assessmentA = assessBrightness(resultA.footLamberts, ambientLight);
+  const assessmentB = assessBrightness(resultB.footLamberts, ambientLight);
+  const winnerAssessment = winner === 'A' ? assessmentA : assessmentB;
+  const leadText = winnerAssessment.status === 'ideal'
+    ? `Closest to the ${brightnessProfile.idealMin}-${brightnessProfile.idealMax} fL target`
+    : winnerAssessment.status === 'bright'
+      ? 'Brighter than target, but still within a usable range'
+      : winnerAssessment.status === 'dim'
+        ? 'Closer to the recommended brightness target'
+        : winnerAssessment.status === 'too-bright'
+          ? 'Less compromised by over-brightness for this room'
+          : 'Less compromised by under-brightness for this room';
 
   return (
     <div className="space-y-6">
@@ -70,12 +85,12 @@ export function ResultsPanel({
             </Badge>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
-              {diffPercent !== null ? `+${diffPercent}% Brighter` : 'Equal brightness'}
+              {leadText}
             </span>
           </div>
 
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-            {winner === 'A' ? resultA.recommendation : resultB.recommendation}
+            {winnerResult.recommendation}
           </p>
         </div>
       </div>
@@ -105,7 +120,7 @@ export function ResultsPanel({
           <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-3">
             <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
             <p className="text-[10px] text-blue-800 dark:text-blue-300 leading-normal font-medium">
-              On a <strong>{screenSize}" screen</strong> in a <strong>{ambientLabel}</strong>, the difference between these units is <strong>highly visible</strong>.
+              On a <strong>{screenSize}" screen</strong> in a <strong>{ambientLabel}</strong>, the target is roughly <strong>{brightnessProfile.idealMin}-{brightnessProfile.idealMax} fL</strong>. More brightness is not always better once a projector is already above that range.
             </p>
           </div>
         </div>
@@ -115,9 +130,9 @@ export function ResultsPanel({
       <div className="space-y-3 pt-4 border-t dark:border-slate-800">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Checklist</h4>
         <div className="space-y-2">
-          <CheckItem label="Brightness Goal" status={Math.max(resultA.footLamberts, resultB.footLamberts) >= 16 ? 'pass' : 'warn'} />
+          <CheckItem label="Brightness Goal" status={winnerAssessment.rating === 'Excellent' ? 'pass' : winnerAssessment.rating === 'Good' ? 'warn' : 'fail'} />
           <CheckItem label="Ambient Contrast" status={ambientLight === 'low' ? 'pass' : 'warn'} />
-          <CheckItem label="Visual Comfort" status="pass" />
+          <CheckItem label="Visual Comfort" status={winnerAssessment.status === 'ideal' || winnerAssessment.status === 'dim' ? 'pass' : 'warn'} />
         </div>
       </div>
     </div>
