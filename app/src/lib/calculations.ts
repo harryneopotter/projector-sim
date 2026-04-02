@@ -42,6 +42,8 @@ const BRIGHTNESS_PROFILES: Record<AmbientLight, BrightnessProfile> = {
   },
 };
 
+const IDEAL_RANGE_PENALTY_FACTOR = 0.25;
+
 /**
  * Calculate screen dimensions from diagonal (16:9 aspect ratio)
  */
@@ -140,13 +142,12 @@ export function getBrightnessRating(
 
 export function getBrightnessFitScore(footLamberts: number, ambientLight: AmbientLight): number {
   const assessment = assessBrightness(footLamberts, ambientLight);
-  const midpoint = (assessment.profile.idealMin + assessment.profile.idealMax) / 2;
   const distanceToIdeal =
     assessment.adjustedFL < assessment.profile.idealMin
       ? assessment.profile.idealMin - assessment.adjustedFL
       : assessment.adjustedFL > assessment.profile.idealMax
         ? assessment.adjustedFL - assessment.profile.idealMax
-        : Math.abs(assessment.adjustedFL - midpoint) * 0.25;
+        : Math.abs(assessment.adjustedFL - ((assessment.profile.idealMin + assessment.profile.idealMax) / 2)) * IDEAL_RANGE_PENALTY_FACTOR;
 
   const baseScore: Record<BrightnessStatus, number> = {
     ideal: 400,

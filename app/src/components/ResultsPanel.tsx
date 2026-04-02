@@ -53,15 +53,9 @@ export function ResultsPanel({
   const assessmentA = assessBrightness(resultA.footLamberts, ambientLight);
   const assessmentB = assessBrightness(resultB.footLamberts, ambientLight);
   const winnerAssessment = winner === 'A' ? assessmentA : assessmentB;
-  const leadText = winnerAssessment.status === 'ideal'
-    ? `Closest to the ${brightnessProfile.idealMin}-${brightnessProfile.idealMax} fL target`
-    : winnerAssessment.status === 'bright'
-      ? 'Brighter than target, but still within a usable range'
-      : winnerAssessment.status === 'dim'
-        ? 'Closer to the recommended brightness target'
-        : winnerAssessment.status === 'too-bright'
-          ? 'Less compromised by over-brightness for this room'
-          : 'Less compromised by under-brightness for this room';
+  const leadText = getLeadText(winnerAssessment.status, brightnessProfile);
+  const brightnessGoalStatus = getChecklistStatus(winnerAssessment.rating);
+  const visualComfortStatus = winnerAssessment.status === 'too-bright' ? 'warn' : 'pass';
 
   return (
     <div className="space-y-6">
@@ -130,13 +124,42 @@ export function ResultsPanel({
       <div className="space-y-3 pt-4 border-t dark:border-slate-800">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Checklist</h4>
         <div className="space-y-2">
-          <CheckItem label="Brightness Goal" status={winnerAssessment.rating === 'Excellent' ? 'pass' : winnerAssessment.rating === 'Good' ? 'warn' : 'fail'} />
+          <CheckItem label="Brightness Goal" status={brightnessGoalStatus} />
           <CheckItem label="Ambient Contrast" status={ambientLight === 'low' ? 'pass' : 'warn'} />
-          <CheckItem label="Visual Comfort" status={winnerAssessment.status === 'ideal' || winnerAssessment.status === 'dim' ? 'pass' : 'warn'} />
+          <CheckItem label="Visual Comfort" status={visualComfortStatus} />
         </div>
       </div>
     </div>
   );
+}
+
+function getLeadText(
+  status: ReturnType<typeof assessBrightness>['status'],
+  profile: ReturnType<typeof getBrightnessProfile>,
+): string {
+  switch (status) {
+    case 'ideal':
+      return `Closest to the ${profile.idealMin}-${profile.idealMax} fL target`;
+    case 'bright':
+      return 'Brighter than target, but still within a usable range';
+    case 'dim':
+      return 'Closer to the recommended brightness target';
+    case 'too-bright':
+      return 'Less compromised by over-brightness for this room';
+    case 'too-dim':
+      return 'Less compromised by under-brightness for this room';
+  }
+}
+
+function getChecklistStatus(rating: CalculationResult['rating']): 'pass' | 'warn' | 'fail' {
+  switch (rating) {
+    case 'Excellent':
+      return 'pass';
+    case 'Good':
+      return 'warn';
+    default:
+      return 'fail';
+  }
 }
 
 /**
