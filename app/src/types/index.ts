@@ -13,12 +13,14 @@ export interface Projector {
   lumens: number;
 }
 
+export type BrightnessRating = 'Excellent' | 'Good' | 'Fair' | 'Poor';
+
 export interface CalculationResult {
   footLamberts: number;
   nits: number;
   visualBrightness: number; // percentage for CSS filter
   contrastReduction: number; // percentage
-  rating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  rating: BrightnessRating;
   recommendation: string;
 }
 

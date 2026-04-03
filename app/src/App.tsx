@@ -254,26 +254,26 @@ function App() {
             {/* Brightness Guidelines */}
             <section>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Brightness Guidelines</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 gap-2 text-xs">
                 <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-900/50">
-                  <div className="font-medium text-green-800 dark:text-green-400">16+ fL</div>
-                  <div className="text-green-600 dark:text-green-500/70">Excellent (dark room)</div>
+                  <div className="font-medium text-green-800 dark:text-green-400">Dark room: 16-22 fL</div>
+                  <div className="text-green-600 dark:text-green-500/70">Best reference range for a theater-style image</div>
                 </div>
                 <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-900/50">
-                  <div className="font-medium text-blue-800 dark:text-blue-400">12-16 fL</div>
-                  <div className="text-blue-600 dark:text-blue-500/70">Good (dark room)</div>
+                  <div className="font-medium text-blue-800 dark:text-blue-400">Living room: 30-50 fL</div>
+                  <div className="text-blue-600 dark:text-blue-500/70">Good balance when some ambient light is present</div>
                 </div>
                 <div className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-900/50">
-                  <div className="font-medium text-amber-800 dark:text-amber-400">8-12 fL</div>
-                  <div className="text-amber-600 dark:text-amber-500/70">Fair (may need adjustment)</div>
+                  <div className="font-medium text-amber-800 dark:text-amber-400">Bright room: 45-75 fL</div>
+                  <div className="text-amber-600 dark:text-amber-500/70">Useful target when daylight or strong room light is present</div>
                 </div>
                 <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded border border-red-200 dark:border-red-900/50">
-                  <div className="font-medium text-red-800 dark:text-red-400">&lt;8 fL</div>
-                  <div className="text-red-600 dark:text-red-500/70">Poor (too dim)</div>
+                  <div className="font-medium text-red-800 dark:text-red-400">Above target range</div>
+                  <div className="text-red-600 dark:text-red-500/70">Can look harsh or washed out; more brightness is not always better</div>
                 </div>
               </div>
               <p className="text-xs text-slate-500 mt-2">
-                Note: Bright rooms need 20-30+ fL for good results.
+                Ratings are now based on how close each setup is to the recommended range for the selected room, not just on which projector is brighter.
               </p>
             </section>
 
