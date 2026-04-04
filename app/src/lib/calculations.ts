@@ -127,7 +127,7 @@ export function assessBrightness(footLamberts: number, ambientLight: AmbientLigh
     return { adjustedFL, status: 'bright', rating: 'Good', profile };
   }
 
-  return { adjustedFL, status: 'too-bright', rating: 'Fair', profile };
+  return { adjustedFL, status: 'too-bright', rating: 'Good', profile };
 }
 
 /**
