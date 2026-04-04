@@ -20,11 +20,11 @@ interface BrightnessAssessment {
 
 const BRIGHTNESS_PROFILES: Record<AmbientLight, BrightnessProfile> = {
   low: {
-    minimum: 8,
-    acceptableMin: 12,
+    minimum: 10,
+    acceptableMin: 14,
     idealMin: 16,
-    idealMax: 22,
-    acceptableMax: 30,
+    idealMax: 35,
+    acceptableMax: 65,
   },
   medium: {
     minimum: 14,
@@ -142,18 +142,20 @@ export function getBrightnessRating(
 
 export function getBrightnessFitScore(footLamberts: number, ambientLight: AmbientLight): number {
   const assessment = assessBrightness(footLamberts, ambientLight);
+  const { idealMin, idealMax, acceptableMax } = assessment.profile;
+  const { adjustedFL } = assessment;
   const distanceToIdeal =
-    assessment.adjustedFL < assessment.profile.idealMin
-      ? assessment.profile.idealMin - assessment.adjustedFL
-      : assessment.adjustedFL > assessment.profile.idealMax
-        ? assessment.adjustedFL - assessment.profile.idealMax
-        : Math.abs(assessment.adjustedFL - ((assessment.profile.idealMin + assessment.profile.idealMax) / 2)) * IDEAL_RANGE_PENALTY_FACTOR;
+    adjustedFL < idealMin
+      ? idealMin - adjustedFL
+      : adjustedFL > idealMax
+        ? Math.min(adjustedFL, acceptableMax) - idealMax
+        : Math.abs(adjustedFL - ((idealMin + idealMax) / 2)) * IDEAL_RANGE_PENALTY_FACTOR;
 
   const baseScore: Record<BrightnessStatus, number> = {
     ideal: 400,
     bright: 300,
     dim: 250,
-    'too-bright': 180,
+    'too-bright': 300,
     'too-dim': 100,
   };
 
@@ -173,7 +175,7 @@ export function getRecommendation(footLamberts: number, ambientLight: AmbientLig
     case 'bright':
       return `Brighter than the usual ${ambientLabel} target, but still usable if you prefer a punchier image.`;
     case 'too-bright':
-      return `Well above the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing and may feel harsh in darker scenes.`;
+      return `Above the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing, but higher brightness gives you flexibility — you can reduce it or use it in larger or brighter environments.`;
     case 'dim':
       return `A bit under the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing.`;
     case 'too-dim':
