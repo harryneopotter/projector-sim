@@ -13,7 +13,7 @@ export interface Projector {
   lumens: number;
 }
 
-export type BrightnessRating = 'Excellent' | 'Good' | 'Fair' | 'Poor';
+export type BrightnessRating = 'Reference' | 'Excellent' | 'Good' | 'Fair' | 'Poor';
 
 export interface CalculationResult {
   footLamberts: number;

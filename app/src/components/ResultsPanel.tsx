@@ -155,6 +155,7 @@ function getLeadText(
 
 function getChecklistStatus(rating: CalculationResult['rating']): 'pass' | 'warn' | 'fail' {
   switch (rating) {
+    case 'Reference':
     case 'Excellent':
       return 'pass';
     case 'Good':

@@ -122,7 +122,7 @@ export function assessBrightness(footLamberts: number, ambientLight: AmbientLigh
     return { adjustedFL, status: 'ideal', rating: 'Excellent', profile };
   }
 
-  return { adjustedFL, status: 'reference', rating: 'Excellent', profile };
+  return { adjustedFL, status: 'reference', rating: 'Reference', profile };
 }
 
 /**

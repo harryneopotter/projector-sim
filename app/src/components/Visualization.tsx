@@ -208,6 +208,7 @@ function ProjectorLayer({
   const contrast = 1 - (result.contrastReduction / 100);
 
   const ratingColors = {
+    'Reference': 'text-cyan-400',
     'Excellent': 'text-green-400',
     'Good':      'text-blue-400',
     'Fair':      'text-amber-400',
