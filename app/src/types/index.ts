@@ -1,4 +1,4 @@
-export type AmbientLight = 'low' | 'medium' | 'high';
+export type AmbientLight = 'pitch_black' | 'dim_living_room' | 'bright_room';
 
 export interface SharedParams {
   screenSize: number; // inches
@@ -33,23 +33,23 @@ export interface Preset {
 }
 
 export const AMBIENT_MULTIPLIERS: Record<AmbientLight, { multiplier: number; contrastReduction: number; label: string; description: string }> = {
-  low: { 
+  pitch_black: {
     multiplier: 1.0, 
     contrastReduction: 0, 
-    label: 'Dark Room',
-    description: 'Dedicated theater room with light control'
+    label: 'Pitch Black',
+    description: '0 light dark room'
   },
-  medium: { 
+  dim_living_room: {
     multiplier: 0.85, 
     contrastReduction: 15, 
-    label: 'Living Room',
-    description: 'Typical room with some ambient light'
+    label: 'Dim Living Room',
+    description: 'Living room with low lights'
   },
-  high: { 
+  bright_room: {
     multiplier: 0.60, 
     contrastReduction: 40, 
     label: 'Bright Room',
-    description: 'Daylight or well-lit room'
+    description: 'Day time usage with windows open'
   },
 };
 
@@ -57,7 +57,7 @@ export const DEFAULT_SHARED: SharedParams = {
   screenSize: 100,
   throwDistance: 12,
   viewingDistance: 12,
-  ambientLight: 'low',
+  ambientLight: 'pitch_black',
 };
 
 export const DEFAULT_PROJECTOR_A: Projector = {
@@ -80,7 +80,7 @@ export const PRESETS: Preset[] = [
       screenSize: 100,
       throwDistance: 12,
       viewingDistance: 12,
-      ambientLight: 'low',
+      ambientLight: 'pitch_black',
     },
     projectorA: { id: 'A', name: 'Entry Level', lumens: 2000 },
     projectorB: { id: 'B', name: 'Mid Range', lumens: 3500 },
@@ -92,7 +92,7 @@ export const PRESETS: Preset[] = [
       screenSize: 120,
       throwDistance: 14,
       viewingDistance: 10,
-      ambientLight: 'medium',
+      ambientLight: 'dim_living_room',
     },
     projectorA: { id: 'A', name: 'Budget Option', lumens: 2500 },
     projectorB: { id: 'B', name: 'Premium Option', lumens: 4000 },
@@ -104,7 +104,7 @@ export const PRESETS: Preset[] = [
       screenSize: 150,
       throwDistance: 16,
       viewingDistance: 12,
-      ambientLight: 'high',
+      ambientLight: 'bright_room',
     },
     projectorA: { id: 'A', name: 'Standard', lumens: 3000 },
     projectorB: { id: 'B', name: 'High Brightness', lumens: 5000 },

@@ -1,7 +1,7 @@
 import type { SharedParams, Projector, CalculationResult, AmbientLight, BrightnessRating } from '@/types';
 import { AMBIENT_MULTIPLIERS } from '@/types';
 
-type BrightnessStatus = 'too-dim' | 'dim' | 'ideal' | 'bright' | 'too-bright';
+type BrightnessStatus = 'too-dim' | 'dim' | 'good' | 'ideal' | 'reference';
 
 interface BrightnessProfile {
   minimum: number;
@@ -19,26 +19,26 @@ interface BrightnessAssessment {
 }
 
 const BRIGHTNESS_PROFILES: Record<AmbientLight, BrightnessProfile> = {
-  low: {
-    minimum: 10,
-    acceptableMin: 14,
-    idealMin: 16,
-    idealMax: 35,
-    acceptableMax: 65,
+  pitch_black: {
+    minimum: 15,
+    acceptableMin: 25,
+    idealMin: 35,
+    idealMax: 120,
+    acceptableMax: 250,
   },
-  medium: {
-    minimum: 14,
-    acceptableMin: 22,
-    idealMin: 30,
-    idealMax: 50,
-    acceptableMax: 65,
+  dim_living_room: {
+    minimum: 25,
+    acceptableMin: 45,
+    idealMin: 65,
+    idealMax: 180,
+    acceptableMax: 350,
   },
-  high: {
-    minimum: 20,
-    acceptableMin: 30,
-    idealMin: 45,
-    idealMax: 75,
-    acceptableMax: 100,
+  bright_room: {
+    minimum: 60,
+    acceptableMin: 100,
+    idealMin: 150,
+    idealMax: 300,
+    acceptableMax: 600,
   },
 };
 
@@ -116,18 +116,14 @@ export function assessBrightness(footLamberts: number, ambientLight: AmbientLigh
   }
 
   if (adjustedFL < profile.idealMin) {
-    return { adjustedFL, status: 'dim', rating: 'Good', profile };
+    return { adjustedFL, status: 'good', rating: 'Good', profile };
   }
 
   if (adjustedFL <= profile.idealMax) {
     return { adjustedFL, status: 'ideal', rating: 'Excellent', profile };
   }
 
-  if (adjustedFL <= profile.acceptableMax) {
-    return { adjustedFL, status: 'bright', rating: 'Good', profile };
-  }
-
-  return { adjustedFL, status: 'too-bright', rating: 'Good', profile };
+  return { adjustedFL, status: 'reference', rating: 'Excellent', profile };
 }
 
 /**
@@ -142,24 +138,22 @@ export function getBrightnessRating(
 
 export function getBrightnessFitScore(footLamberts: number, ambientLight: AmbientLight): number {
   const assessment = assessBrightness(footLamberts, ambientLight);
-  const { idealMin, idealMax, acceptableMax } = assessment.profile;
+  const { idealMin } = assessment.profile;
   const { adjustedFL } = assessment;
-  const distanceToIdeal =
-    adjustedFL < idealMin
-      ? idealMin - adjustedFL
-      : adjustedFL > idealMax
-        ? Math.min(adjustedFL, acceptableMax) - idealMax
-        : Math.abs(adjustedFL - ((idealMin + idealMax) / 2)) * IDEAL_RANGE_PENALTY_FACTOR;
 
   const baseScore: Record<BrightnessStatus, number> = {
-    ideal: 400,
-    bright: 300,
-    dim: 250,
-    'too-bright': 300,
+    reference: 500,
+    ideal: 450,
+    good: 350,
+    dim: 200,
     'too-dim': 100,
   };
 
-  return baseScore[assessment.status] - distanceToIdeal;
+  // Higher is better, but diminishing returns above idealMin
+  const bonus = adjustedFL >= idealMin ? Math.min(50, (adjustedFL - idealMin) / 10) : 0;
+  const penalty = adjustedFL < idealMin ? (idealMin - adjustedFL) : 0;
+
+  return baseScore[assessment.status] + bonus - penalty;
 }
 
 /**
@@ -170,16 +164,16 @@ export function getRecommendation(footLamberts: number, ambientLight: AmbientLig
   const { adjustedFL, status, profile } = assessBrightness(footLamberts, ambientLight);
 
   switch (status) {
+    case 'reference':
+      return `Outstanding brightness of ${adjustedFL.toFixed(1)} effective fL. This provides incredible HDR punch and clarity even in ${ambientLabel} environments.`;
     case 'ideal':
-      return `Hits the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing.`;
-    case 'bright':
-      return `Brighter than the usual ${ambientLabel} target, but still usable if you prefer a punchier image.`;
-    case 'too-bright':
-      return `Above the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing, but higher brightness gives you flexibility — you can reduce it or use it in larger or brighter environments.`;
+      return `Excellent fit. Hits the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing, ensuring a vibrant image.`;
+    case 'good':
+      return `Good performance. While slightly below the top tier, it provides a solid image for ${ambientLabel} usage.`;
     case 'dim':
-      return `A bit under the recommended ${profile.idealMin}-${profile.idealMax} fL target for ${ambientLabel} viewing.`;
+      return `Functional but dim. At ${adjustedFL.toFixed(1)} effective fL, the image will look washed out in ${ambientLabel} conditions.`;
     case 'too-dim':
-      return `Too dim for ${ambientLabel} viewing at roughly ${adjustedFL.toFixed(1)} effective fL.`;
+      return `Too dim for ${ambientLabel} viewing. At roughly ${adjustedFL.toFixed(1)} effective fL, you will struggle to see detail.`;
     default:
       return '';
   }

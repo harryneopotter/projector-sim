@@ -58,7 +58,7 @@ function App() {
     const lumensB = params.get('lumensB');
 
     if (size) updateSharedParam('screenSize', Number(size));
-    if (ambient === 'low' || ambient === 'medium' || ambient === 'high') {
+    if (ambient === 'pitch_black' || ambient === 'dim_living_room' || ambient === 'bright_room') {
       updateSharedParam('ambientLight', ambient);
     }
     if (nameA) updateProjectorA('name', nameA);
@@ -232,7 +232,7 @@ function App() {
               </h3>
               <ol className="text-sm text-slate-600 dark:text-slate-400 space-y-1.5 list-decimal list-inside">
                 <li>Set your <strong>screen size</strong> (diagonal in inches)</li>
-                <li>Choose your <strong>room lighting</strong> (dark, medium, or bright)</li>
+                <li>Choose your <strong>room lighting</strong> (Pitch Black, Dim Living Room, or Bright Room)</li>
                 <li>Enter the <strong>brightness</strong> (lumens) for each projector</li>
                 <li>Compare the visual preview and numerical results</li>
               </ol>
@@ -255,26 +255,23 @@ function App() {
             <section>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Brightness Guidelines</h3>
               <div className="grid grid-cols-1 gap-2 text-xs">
-                <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-900/50">
-                  <div className="font-medium text-green-800 dark:text-green-400">Dark room: 16-22 fL</div>
-                  <div className="text-green-600 dark:text-green-500/70">Best reference range for a theater-style image</div>
+                <div className="p-2 bg-slate-50 dark:bg-slate-950/20 rounded border border-slate-200 dark:border-slate-800">
+                  <div className="font-medium text-slate-800 dark:text-slate-300">Pitch Black: 15-35+ fL</div>
+                  <div className="text-slate-600 dark:text-slate-500/70">Standard theater range; 35+ fL enables high-impact HDR.</div>
                 </div>
                 <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-900/50">
-                  <div className="font-medium text-blue-800 dark:text-blue-400">Living room: 30-50 fL</div>
-                  <div className="text-blue-600 dark:text-blue-500/70">Good balance when some ambient light is present</div>
+                  <div className="font-medium text-blue-800 dark:text-blue-400">Dim Living Room: 45-65+ fL</div>
+                  <div className="text-blue-600 dark:text-blue-500/70">Combats low ambient light for a punchy, vibrant image.</div>
                 </div>
-                <div className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-900/50">
-                  <div className="font-medium text-amber-800 dark:text-amber-400">Bright room: 45-75 fL</div>
-                  <div className="text-amber-600 dark:text-amber-500/70">Useful target when daylight or strong room light is present</div>
+                <div className="p-2 bg-orange-50 dark:bg-orange-950/20 rounded border border-orange-200 dark:border-orange-900/50">
+                  <div className="font-medium text-orange-800 dark:text-orange-400">Bright Room: 100-150+ fL</div>
+                  <div className="text-orange-600 dark:text-orange-500/70">Required for daytime viewing with windows open.</div>
                 </div>
-                <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded border border-red-200 dark:border-red-900/50">
-                  <div className="font-medium text-red-800 dark:text-red-400">Above target range</div>
-                  <div className="text-red-600 dark:text-red-500/70">Can look harsh or washed out; more brightness is not always better</div>
+                <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-900/50">
+                  <div className="font-medium text-green-800 dark:text-green-400">Higher is Better</div>
+                  <div className="text-green-600 dark:text-green-500/70">Unlike old standards, modern HDR and real-world usage benefit from higher peak brightness.</div>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
-                Ratings are now based on how close each setup is to the recommended range for the selected room, not just on which projector is brighter.
-              </p>
             </section>
 
             {/* Tips */}
