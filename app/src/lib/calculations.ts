@@ -42,7 +42,6 @@ const BRIGHTNESS_PROFILES: Record<AmbientLight, BrightnessProfile> = {
   },
 };
 
-const IDEAL_RANGE_PENALTY_FACTOR = 0.25;
 
 /**
  * Calculate screen dimensions from diagonal (16:9 aspect ratio)
