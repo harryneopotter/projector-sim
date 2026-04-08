@@ -108,15 +108,15 @@ interface PresetCardProps {
 
 function PresetCard({ preset, onApply, isApplied }: PresetCardProps) {
   const ambientLabels = {
-    low: 'Dark Room',
-    medium: 'Living Room',
-    high: 'Bright Room',
+    pitch_black: 'Pitch Black',
+    dim_living_room: 'Dim Living Room',
+    bright_room: 'Bright Room',
   };
 
   const ambientColors = {
-    low: 'bg-slate-700',
-    medium: 'bg-amber-500',
-    high: 'bg-orange-500',
+    pitch_black: 'bg-slate-900',
+    dim_living_room: 'bg-amber-500',
+    bright_room: 'bg-orange-500',
   };
 
   return (

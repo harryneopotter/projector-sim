@@ -141,11 +141,11 @@ export function ControlsPanel({
                   >
                     <div className="flex items-center gap-1.5 mb-1">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white ${
-                        level === 'low' ? 'bg-slate-700' : level === 'medium' ? 'bg-amber-500' : 'bg-orange-500'
+                        level === 'pitch_black' ? 'bg-slate-900' : level === 'dim_living_room' ? 'bg-amber-500' : 'bg-orange-500'
                       }`}>
                         <Sun className="w-2.5 h-2.5" />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-tighter dark:text-slate-300">{level}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tighter dark:text-slate-300">{AMBIENT_MULTIPLIERS[level].label}</span>
                     </div>
                   </button>
                 ))}

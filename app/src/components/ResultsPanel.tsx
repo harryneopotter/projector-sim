@@ -55,7 +55,7 @@ export function ResultsPanel({
   const winnerAssessment = winner === 'A' ? assessmentA : assessmentB;
   const leadText = getLeadText(winnerAssessment.status, brightnessProfile);
   const brightnessGoalStatus = getChecklistStatus(winnerAssessment.rating);
-  const visualComfortStatus = winnerAssessment.status === 'too-bright' ? 'warn' : 'pass';
+  const visualComfortStatus = 'pass';
 
   return (
     <div className="space-y-6">
@@ -114,7 +114,7 @@ export function ResultsPanel({
           <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-3">
             <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
             <p className="text-[10px] text-blue-800 dark:text-blue-300 leading-normal font-medium">
-              On a <strong>{screenSize}" screen</strong> in a <strong>{ambientLabel}</strong>, the target is roughly <strong>{brightnessProfile.idealMin}-{brightnessProfile.idealMax} fL</strong>. More brightness is not always better once a projector is already above that range.
+              On a <strong>{screenSize}" screen</strong> in a <strong>{ambientLabel}</strong>, the target is roughly <strong>{brightnessProfile.idealMin}-{brightnessProfile.idealMax} fL</strong>. Higher brightness (fL) improves HDR punch and image clarity, especially in rooms with any ambient light.
             </p>
           </div>
         </div>
@@ -125,7 +125,7 @@ export function ResultsPanel({
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Checklist</h4>
         <div className="space-y-2">
           <CheckItem label="Brightness Goal" status={brightnessGoalStatus} />
-          <CheckItem label="Ambient Contrast" status={ambientLight === 'low' ? 'pass' : 'warn'} />
+          <CheckItem label="Ambient Contrast" status={ambientLight === 'pitch_black' ? 'pass' : 'warn'} />
           <CheckItem label="Visual Comfort" status={visualComfortStatus} />
         </div>
       </div>
@@ -138,16 +138,18 @@ function getLeadText(
   profile: ReturnType<typeof getBrightnessProfile>,
 ): string {
   switch (status) {
+    case 'reference':
+      return 'Reference level brightness for ultimate HDR impact';
     case 'ideal':
-      return `Closest to the ${profile.idealMin}-${profile.idealMax} fL target`;
-    case 'bright':
-      return 'Brighter than target, but still within a usable range';
+      return `Perfectly hits the ${profile.idealMin}-${profile.idealMax} fL target`;
+    case 'good':
+      return 'Solid performance for this environment';
     case 'dim':
-      return 'Closer to the recommended brightness target';
-    case 'too-bright':
-      return 'Less compromised by over-brightness for this room';
+      return 'Functional but would benefit from more lumens';
     case 'too-dim':
-      return 'Less compromised by under-brightness for this room';
+      return 'Struggles with brightness in this configuration';
+    default:
+      return '';
   }
 }
 
