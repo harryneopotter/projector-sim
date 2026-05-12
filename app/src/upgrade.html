@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProjSim • What You Would Actually See</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+    body { font-family: 'Inter', system_ui, sans-serif; }
+    .canvas-container { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    .metric { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-4xl font-semibold tracking-tight">What You Would Actually See</h1>
+        <p class="text-zinc-400 mt-1">Same content • Same room • Real physics. No marketing.</p>
+      </div>
+      <div class="text-right text-sm text-zinc-500">
+        Honest Projector Simulator<br>
+        <span class="text-emerald-400">v2 • Rebuilt</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap gap-4 mb-8 bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+      <!-- Ambient -->
+      <div class="flex-1 min-w-[220px]">
+        <label class="block text-sm font-medium text-zinc-400 mb-1.5">Room Lighting</label>
+        <select id="ambient" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm">
+          <option value="pitch_black">Pitch Black (Dedicated Theater)</option>
+          <option value="dim_living_room" selected>Dim Living Room (some lights)</option>
+          <option value="bright_room">Bright Room (lights fully on)</option>
+        </select>
+      </div>
+
+      <!-- Screen Size -->
+      <div class="flex-1 min-w-[220px]">
+        <label class="block text-sm font-medium text-zinc-400 mb-1.5">Screen Size: <span id="size-value">100</span>"</label>
+        <input type="range" id="screen-size" min="60" max="150" step="5" value="100" 
+               class="w-full accent-white">
+      </div>
+
+      <div class="flex items-end">
+        <button onclick="loadDemoImage()" 
+                class="px-5 py-2.5 bg-white text-zinc-950 rounded-xl text-sm font-medium hover:bg-zinc-200 transition-colors">
+          Load Test Image
+        </button>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Projector A -->
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <input id="name-a" value="MOGO 4" class="bg-transparent font-semibold text-xl w-40 focus:outline-none">
+            <div class="flex items-center gap-2 mt-1">
+              <input id="lumens-a" type="number" value="450" class="w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1 text-sm">
+              <select id="claim-a" class="bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
+                <option value="ISO">ISO lumens</option>
+                <option value="LED">LED lumens</option>
+                <option value="ANSI">ANSI lumens</option>
+              </select>
+            </div>
+          </div>
+          <div class="text-right">
+            <div id="fl-a" class="text-2xl font-semibold metric">—</div>
+            <div id="vis-a" class="text-xs text-zinc-500">—% perceived</div>
+          </div>
+        </div>
+        
+        <div class="canvas-container rounded-2xl overflow-hidden border border-zinc-800">
+          <canvas id="canvas-a" width="640" height="360" class="w-full"></canvas>
+        </div>
+        
+        <div id="status-a" class="mt-3 text-xs px-3 py-1 rounded-full inline-block"></div>
+      </div>
+
+      <!-- Projector B -->
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <input id="name-b" value="BenQ TK700" class="bg-transparent font-semibold text-xl w-40 focus:outline-none">
+            <div class="flex items-center gap-2 mt-1">
+              <input id="lumens-b" type="number" value="3500" class="w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1 text-sm">
+              <select id="claim-b" class="bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-xs">
+                <option value="ISO">ISO lumens</option>
+                <option value="LED">LED lumens</option>
+                <option value="ANSI" selected>ANSI lumens</option>
+              </select>
+            </div>
+          </div>
+          <div class="text-right">
+            <div id="fl-b" class="text-2xl font-semibold metric">—</div>
+            <div id="vis-b" class="text-xs text-zinc-500">—% perceived</div>
+          </div>
+        </div>
+        
+        <div class="canvas-container rounded-2xl overflow-hidden border border-zinc-800">
+          <canvas id="canvas-b" width="640" height="360" class="w-full"></canvas>
+        </div>
+        
+        <div id="status-b" class="mt-3 text-xs px-3 py-1 rounded-full inline-block"></div>
+      </div>
+    </div>
+
+    <p class="text-center text-[10px] text-zinc-500 mt-8">
+      This is what the image would actually look like on your wall. Change the numbers. See the truth.
+    </p>
+  </div>
+
+  <input type="file" id="image-upload" accept="image/*" class="hidden">
+
+  <script>
+    // Tailwind script
+    function initTailwind() {
+      document.documentElement.style.setProperty('--accent', '#fff');
+    }
+
+    // Improved calculation logic (inline)
+    const AMBIENT = {
+      pitch_black: { multiplier: 1.0, label: 'Pitch Black' },
+      dim_living_room: { multiplier: 0.65, label: 'Dim Living Room' },
+      bright_room: { multiplier: 0.35, label: 'Bright Room' }
+    };
+
+    const LUMEN_CONVERSION = { ANSI: 1.0, LED: 0.45, ISO: 0.35 };
+
+    function calculateFootLamberts(lumens, screenSize, claimType) {
+      const real = lumens * LUMEN_CONVERSION[claimType];
+      const area = (screenSize * 0.8716 * screenSize * 0.4903) / 144;
+      return real / area;
+    }
+
+    function calculateVisualBrightness(fl, ambient) {
+      const mult = AMBIENT[ambient].multiplier;
+      const effective = fl * mult;
+      let perceived = Math.pow(effective / 18, 0.72);
+      if (perceived > 1.15) perceived = 1.15 + Math.log(perceived - 1.15 + 1) * 0.45;
+      return Math.max(6, Math.min(140, perceived * 100));
+    }
+
+    function getStatus(fl, ambient) {
+      const mult = AMBIENT[ambient].multiplier;
+      const effective = fl * mult;
+      
+      if (effective < 22) return { text: 'Too dim', color: 'bg-red-500/20 text-red-400' };
+      if (effective < 45) return { text: 'Dim & washed out', color: 'bg-orange-500/20 text-orange-400' };
+      if (effective < 65) return { text: 'Acceptable', color: 'bg-yellow-500/20 text-yellow-400' };
+      if (effective < 160) return { text: 'Excellent', color: 'bg-emerald-500/20 text-emerald-400' };
+      return { text: 'Outstanding (HDR)', color: 'bg-emerald-500/20 text-emerald-400' };
+    }
+
+    // Renderer
+    function renderPreview(canvas, img, fl, ambient, screenSize) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      const visual = calculateVisualBrightness(fl, ambient) / 100;
+      const contrastLoss = ambient === 'bright_room' ? 0.38 : ambient === 'dim_living_room' ? 0.18 : 0.05;
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i] / 255;
+        let g = data[i + 1] / 255;
+        let b = data[i + 2] / 255;
+
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        let scaled = lum * visual;
+
+        if (scaled > 0.92) scaled = 0.92 + (scaled - 0.92) * 0.35;
+
+        const mid = 0.5;
+        let adjusted = (scaled - mid) * (1 - contrastLoss) + mid;
+
+        const desat = ambient === 'bright_room' ? 0.82 : 1.0;
+        r = ((r - lum) * desat + adjusted) * 255;
+        g = ((g - lum) * desat + adjusted) * 255;
+        b = ((b - lum) * desat + adjusted) * 255;
+
+        data[i] = Math.max(0, Math.min(255, r));
+        data[i + 1] = Math.max(0, Math.min(255, g));
+        data[i + 2] = Math.max(0, Math.min(255, b));
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Main update function
+    let currentImage = null;
+
+    function updateAll() {
+      const ambient = document.getElementById('ambient').value;
+      const screenSize = parseInt(document.getElementById('screen-size').value);
+
+      // Projector A
+      const lumensA = parseFloat(document.getElementById('lumens-a').value) || 450;
+      const claimA = document.getElementById('claim-a').value;
+      const flA = calculateFootLamberts(lumensA, screenSize, claimA);
+      const visA = calculateVisualBrightness(flA, ambient);
+
+      document.getElementById('fl-a').textContent = flA.toFixed(1) + ' fL';
+      document.getElementById('vis-a').textContent = Math.round(visA) + '% perceived';
+
+      const statusA = getStatus(flA, ambient);
+      const statusElA = document.getElementById('status-a');
+      statusElA.textContent = statusA.text;
+      statusElA.className = `mt-3 text-xs px-3 py-1 rounded-full inline-block ${statusA.color}`;
+
+      // Projector B
+      const lumensB = parseFloat(document.getElementById('lumens-b').value) || 3500;
+      const claimB = document.getElementById('claim-b').value;
+      const flB = calculateFootLamberts(lumensB, screenSize, claimB);
+      const visB = calculateVisualBrightness(flB, ambient);
+
+      document.getElementById('fl-b').textContent = flB.toFixed(1) + ' fL';
+      document.getElementById('vis-b').textContent = Math.round(visB) + '% perceived';
+
+      const statusB = getStatus(flB, ambient);
+      const statusElB = document.getElementById('status-b');
+      statusElB.textContent = statusB.text;
+      statusElB.className = `mt-3 text-xs px-3 py-1 rounded-full inline-block ${statusB.color}`;
+
+      // Render canvases
+      const canvasA = document.getElementById('canvas-a');
+      const canvasB = document.getElementById('canvas-b');
+
+      if (currentImage) {
+        renderPreview(canvasA, currentImage, flA, ambient, screenSize);
+        renderPreview(canvasB, currentImage, flB, ambient, screenSize);
+      }
+    }
+
+    function loadDemoImage() {
+      const input = document.getElementById('image-upload');
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const img = new Image();
+          img.onload = function() {
+            currentImage = img;
+            updateAll();
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+
+    // Initialize everything
+    function init() {
+      initTailwind();
+
+      // Set initial values
+      document.getElementById('screen-size').addEventListener('input', function() {
+        document.getElementById('size-value').textContent = this.value;
+        updateAll();
+      });
+
+      // Live updates on all inputs
+      const inputs = ['ambient', 'lumens-a', 'claim-a', 'lumens-b', 'claim-b'];
+      inputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', updateAll);
+        document.getElementById(id).addEventListener('change', updateAll);
+      });
+
+      // Initial screen size display
+      document.getElementById('size-value').textContent = document.getElementById('screen-size').value;
+
+      // Load a default cinematic image (you can replace this URL with one of the generated images)
+      const defaultImg = new Image();
+      defaultImg.crossOrigin = "anonymous";
+      defaultImg.onload = function() {
+        currentImage = defaultImg;
+        updateAll();
+      };
+      // Using a reliable high-quality image (dark cinematic feel)
+      defaultImg.src = "https://picsum.photos/id/1015/1280/720"; // Change to your generated image if you have the URL
+
+      // Initial update
+      setTimeout(updateAll, 300);
+
+      // Keyboard hint
+      console.log('%c[ProjSim] Tip: Upload your own test image for even better comparison', 'color:#666');
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
